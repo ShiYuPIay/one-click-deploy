@@ -12,28 +12,34 @@ workers_dev        = true          # Exposes a *.workers.dev URL for testing
 #
 #   1. GET  /api/templates    — Caches the monthly GitHub fetch
 #   2. POST /api/deploy       — Stores per-job state and log lines
-#   3. GET  /api/deploy/:id   — Reads that state; returns HTTP 503
+#   3. GET  /api/deploy/:id   — Reads per-job state; returns HTTP 503
 #                               without this binding, which breaks
 #                               all deploy-progress polling on the
-#                               frontend
+#                               frontend.
 #
-# HOW TO CREATE AND WIRE IN (run once from your project root):
-#
-#   # Production namespace
-#   wrangler kv namespace create "DEPLOY_KV"
-#   # ↑ prints:  id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#
-#   # Preview namespace (used by `wrangler dev`)
-#   wrangler kv namespace create "DEPLOY_KV" --preview
-#   # ↑ prints:  preview_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
-#
-# Paste the 32-character hex IDs from the output into the block
-# below, then commit — Workers Builds will redeploy automatically.
+# ┌─────────────────────────────────────────────────────────┐
+# │  YOUR ID IS MISSING — follow the steps below once,     │
+# │  then commit the file.                                  │
+# │                                                         │
+# │  OPTION A — Cloudflare Dashboard (no CLI needed)       │
+# │  ① Open dash.cloudflare.com → Workers & Pages → KV    │
+# │  ② Click "Create a namespace"                          │
+# │  ③ Name it anything (e.g. DEPLOY_KV) → click Create   │
+# │  ④ Copy the ID shown in the namespace list             │
+# │  ⑤ Paste it into  id = "..."  below                   │
+# │                                                         │
+# │  OPTION B — Wrangler CLI                               │
+# │  $ wrangler kv namespace create "DEPLOY_KV"            │
+# │    → prints:  id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  │
+# │  $ wrangler kv namespace create "DEPLOY_KV" --preview  │
+# │    → prints:  preview_id = "yyyyyy..."  (optional)     │
+# │  Paste both 32-char hex IDs into the fields below.     │
+# └─────────────────────────────────────────────────────────┘
 #
 [[kv_namespaces]]
 binding    = "KV"
-id         = "c3765f92e00a4393a166ecd8b6aab872"   # Production namespace ID (32 hex chars)
-preview_id = ""                                    # Preview namespace ID for wrangler dev
+id         = "c3765f92e00a4393a166ecd8b6aab872"          # ← PASTE your production KV namespace ID here (32 hex chars)
+preview_id = ""          # ← PASTE your preview   KV namespace ID here (optional)
 
 # ── Monthly cron: clear the template cache on the 1st ──────
 # Matches the `scheduled` export in worker.js.
