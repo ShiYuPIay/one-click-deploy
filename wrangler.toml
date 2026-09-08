@@ -1,0 +1,67 @@
+# ═══════════════════════════════════════════════════════════
+# wrangler.toml — One-Click Deploy Platform Worker
+# ═══════════════════════════════════════════════════════════
+
+name               = "one-click-deploy"
+main               = "worker.js"
+compatibility_date = "2024-09-23"
+workers_dev        = true          # Exposes a *.workers.dev URL for testing
+
+# ── KV Namespace ────────────────────────────────────────────
+# REQUIRED — worker.js depends on env.KV for three critical paths:
+#
+#   1. GET  /api/templates    — Caches the monthly GitHub fetch
+#   2. POST /api/deploy       — Stores per-job state and log lines
+#   3. GET  /api/deploy/:id   — Reads that state; returns HTTP 503
+#                               without this binding, which breaks
+#                               all deploy-progress polling on the
+#                               frontend
+#
+# HOW TO CREATE AND WIRE IN (run once from your project root):
+#
+#   # Production namespace
+#   wrangler kv namespace create "DEPLOY_KV"
+#   # ↑ prints:  id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#
+#   # Preview namespace (used by `wrangler dev`)
+#   wrangler kv namespace create "DEPLOY_KV" --preview
+#   # ↑ prints:  preview_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+#
+# Paste the 32-character hex IDs from the output into the block
+# below, then commit — Workers Builds will redeploy automatically.
+#
+[[kv_namespaces]]
+binding    = "KV"
+id         = "3a3bd78ead074424871964f38322e713"   # Production namespace ID (32 hex chars)
+preview_id = ""                                    # Preview namespace ID for wrangler dev
+
+# ── Monthly cron: clear the template cache on the 1st ──────
+# Matches the `scheduled` export in worker.js.
+[triggers]
+crons = ["0 0 1 * *"]
+
+# ── Secrets ─────────────────────────────────────────────────
+# Store secrets via the Cloudflare Dashboard:
+#   Worker → Settings → Variables → Add variable (mark as Secret)
+# Or via the CLI:
+#   wrangler secret put <NAME>
+#
+# NEVER put secret values directly in this file.
+#
+# GITHUB_TOKEN  (optional)
+#   When set, GET /api/templates fetches live GitHub trending repos
+#   and caches them in KV for the month.
+#   Without it, /api/templates falls back to the 10 static templates
+#   embedded in worker.js — the platform still works fine.
+#
+#   wrangler secret put GITHUB_TOKEN
+#
+# Security note: the only values stored in the KV namespace are:
+#   - Cached template lists (no credentials)
+#   - Deploy job state (includes a one-time password that is
+#     burned — replaced with a redacted placeholder — immediately
+#     after the first successful retrieval)
+#
+# User-provided API tokens (cfToken, ghToken) are NEVER written
+# to KV, logs, or any persistent storage. They are used only for
+# the duration of the deploy pipeline and then discarded.
