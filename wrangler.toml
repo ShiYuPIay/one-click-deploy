@@ -32,7 +32,7 @@ workers_dev        = true          # Exposes a *.workers.dev URL for testing
 #
 [[kv_namespaces]]
 binding    = "KV"
-id         = "3a3bd78ead074424871964f38322e713"   # Production namespace ID (32 hex chars)
+id         = "c3765f92e00a4393a166ecd8b6aab872"   # Production namespace ID (32 hex chars)
 preview_id = ""                                    # Preview namespace ID for wrangler dev
 
 # ── Monthly cron: clear the template cache on the 1st ──────
