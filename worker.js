@@ -205,6 +205,13 @@ function goTo(p) {
   S.pg = p; draw();
 }
 
+/* goToPage: data-attribute wrapper for onclick handlers.
+   Avoids passing string literals as arguments in onclick="..." attributes,
+   which caused template-literal  \'→'  string-termination syntax errors. */
+function goToPage(btn) {
+  goTo(btn.getAttribute('data-page'));
+}
+
 /* ─── draw(): public entry point ─────────────────────── */
 /* Wraps _draw() and displays any error visibly in #app   */
 /* instead of swallowing it silently with console.error. */
@@ -340,7 +347,7 @@ function pgTpl() {
     + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
     + '<h2>🔥 本月趋势模板库</h2><span class="mon-tag">每月自动更新</span></div>'
     + '<p>精选 GitHub 万星开源项目 · 预置构建配置 · 点击选择，即刻部署</p></div>'
-    + '<button class="btn btn-g" onclick="goTo(\'cfg\')">← 返回</button></div>';
+    + '<button class="btn btn-g" onclick="goToPage(this)" data-page="cfg">← 返回</button></div>';
 
   if (!S.tplsLoaded) {
     return '<div class="pg-w">'+hdr
@@ -439,8 +446,8 @@ function pgDply() {
       +'<p>当前模板需要复杂后端运行时或资源超出免费托管环境限制，<strong>将导致网站无法正常访问或功能严重缺失</strong>。请查看下方完整错误日志了解具体原因。</p>'
       +(S.failMsg ? '<div class="eb-r">'+esc(S.failMsg)+'</div>' : '')
       +'<div style="display:flex;gap:12px">'
-      +'<button class="btn btn-p" onclick="goTo(\'cfg\')">🔑 更换令牌 / 升级套餐</button>'
-      +'<button class="btn btn-o" onclick="goTo(\'tpl\')">↩ 更换兼容模板</button>'
+      +'<button class="btn btn-p" onclick="goToPage(this)" data-page="cfg">🔑 更换令牌 / 升级套餐</button>'
+      +'<button class="btn btn-o" onclick="goToPage(this)" data-page="tpl">↩ 更换兼容模板</button>'
       +'</div></div>';
   }
   var ttColor = S.fail ? 'var(--dn)' : '#4ade80';
