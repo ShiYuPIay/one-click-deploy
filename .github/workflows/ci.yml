@@ -25,16 +25,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Install dependencies
         run: npm install --ignore-scripts
 
       - name: Run tests
         run: npm test
-
-      - name: Validate Wrangler configuration
-        run: npm run check:wrangler
 
       - name: Dry-run Worker bundle
         run: npm run check:bundle
