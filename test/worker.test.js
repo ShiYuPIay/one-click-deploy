@@ -38,7 +38,7 @@ test("GET /api/templates exposes daily refresh and monthly catalog policies", as
   const body = await response.json();
   assert.equal(body.refreshPolicy, "daily");
   assert.equal(body.catalogPolicy, "monthly");
-  assert.match(body.catalogCycle, /^\\d{4}-\\d{2}$/);
+  assert.match(body.catalogCycle, /^\d{4}-\d{2}$/);
   assert.ok(Array.isArray(body.templates));
 });
 
