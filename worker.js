@@ -1,3 +1,5 @@
+import { createInitialDeployState, migrateDeployState, needsMigration } from "./migrations/state.js";
+
 /**
  * One-Click Deploy Platform — Cloudflare Worker
  * ──────────────────────────────────────────────
@@ -856,11 +858,7 @@ async function handleDeploy(request, env, ctx) {
   if (miss.length) return json({error:`Missing required fields: ${miss.join(', ')}`}, 400);
 
   const deployId  = crypto.randomUUID();
-  const initState = {
-    status:'running', step:0,
-    logs:[{ts:new Date().toISOString().slice(11,19), text:`[System] Deploy job started: ${deployId}`, type:'info'}],
-    startedAt:Date.now(), template:template.name,
-  };
+  const initState = createInitialDeployState(deployId, template.name);
   await kvPut(env, `deploy:${deployId}`, JSON.stringify(initState), {expirationTtl:7200});
   if (ctx) ctx.waitUntil(runPipeline(deployId, {cfToken,cfAccountId,ghToken,ghUsername,template}, env));
   return json({deployId, message:'Deploy started. Poll /api/deploy/:id for real-time progress.'});
@@ -877,18 +875,23 @@ async function handleDeployStatus(deployId, env) {
   if (!raw) return sensitiveJson({error:'Deploy job not found or has expired (jobs are auto-removed after 2 hours).'}, 404);
 
   let state;
-  try { state = JSON.parse(raw); }
-  catch (_) { return sensitiveJson({error:'Corrupt state record.'}, 500); }
+  try {
+    const parsed = JSON.parse(raw);
+    state = migrateDeployState(parsed);
+    if (needsMigration(parsed)) {
+      await kvPut(env, `deploy:${deployId}`, JSON.stringify(state), {expirationTtl:7200});
+    }
+  } catch (_) { return sensitiveJson({error:'Corrupt state record.'}, 500); }
 
   // ── Burn-after-reading for the generated password ──────────
   // If the job is complete and the secret has not yet been burned,
   // this is the one and only delivery of the plaintext password.
-  if (state.status === 'complete' && state.result?.password && !state.secretBurned) {
+  if (state.status === 'complete' && state.result?.password && state.secretState !== 'burned') {
     // Immediately overwrite KV with a burned copy (password redacted)
     // before returning the plaintext, to minimize the exposure window.
     const burnedState = {
       ...state,
-      secretBurned: true,
+      secretState: 'burned',
       result: {
         ...state.result,
         // Replace the password with a clear placeholder for subsequent reads
@@ -901,7 +904,7 @@ async function handleDeployStatus(deployId, env) {
     return sensitiveJson(state, 200, { 'X-Secret-Delivery': 'one-time' });
   }
 
-  // Password already burned (or job not yet complete): return as-is
+  // Password already delivered (or job not yet complete): return as-is
   return sensitiveJson(state);
 }
 
@@ -937,7 +940,7 @@ async function runPipeline(deployId, config, env) {
   // Secrets (cfToken, ghToken) are never written to logs.
   async function addLog(text, type='normal', step=null) {
     const raw   = await kvGet(env, `deploy:${deployId}`);
-    const state = raw ? JSON.parse(raw) : {logs:[]};
+    const state = migrateDeployState(raw ? JSON.parse(raw) : {logs:[]});
     if (!state.logs) state.logs=[];
     state.logs.push({ts:new Date().toISOString().slice(11,19), text, type});
     if (step !== null) state.step = step;
@@ -946,7 +949,7 @@ async function runPipeline(deployId, config, env) {
 
   async function patchState(updates) {
     const raw   = await kvGet(env, `deploy:${deployId}`);
-    const state = raw ? JSON.parse(raw) : {};
+    const state = migrateDeployState(raw ? JSON.parse(raw) : {});
     Object.assign(state, updates);
     await kvPut(env, `deploy:${deployId}`, JSON.stringify(state), {expirationTtl:7200});
   }
