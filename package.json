@@ -6,7 +6,6 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "test": "node --test test/**/*.test.js",
-    "check:wrangler": "wrangler deploy --dry-run --outdir .wrangler/check",
     "check:bundle": "wrangler deploy --dry-run --outdir .wrangler/bundle"
   },
   "devDependencies": {
