@@ -2,10 +2,13 @@
 # wrangler.toml — One-Click Deploy Platform Worker
 # ═══════════════════════════════════════════════════════════
 
-name               = "one-click-deploy"
-main               = "worker.js"
-compatibility_date = "2024-09-23"
-workers_dev        = true          # Exposes a *.workers.dev URL for testing
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "one-click-deploy",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-22",
+  "workers_dev": true
+}       # Exposes a *.workers.dev URL for testing
 
 # ── KV Namespace ────────────────────────────────────────────
 # REQUIRED — worker.js depends on env.KV for three critical paths:
@@ -38,7 +41,7 @@ workers_dev        = true          # Exposes a *.workers.dev URL for testing
 #
 [[kv_namespaces]]
 binding    = "KV"
-id         = "c3765f92e00a4393a166ecd8b6aab872"          # ← PASTE your production KV namespace ID here (32 hex chars)
+id         = "0fe31bd377ec4aa2bbe287e54d5a4873"          # ← PASTE your production KV namespace ID here (32 hex chars)
 preview_id = ""          # ← PASTE your preview   KV namespace ID here (optional)
 
 # ── Monthly cron: clear the template cache on the 1st ──────
