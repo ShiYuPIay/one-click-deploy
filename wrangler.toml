@@ -1,76 +1,29 @@
-# ═══════════════════════════════════════════════════════════
-# wrangler.toml — One-Click Deploy Platform Worker
-# ═══════════════════════════════════════════════════════════
-
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // ── Worker ────────────────────────────────────────────────
   "name": "one-click-deploy",
   "main": "worker.js",
+
+  // Cloudflare Workers Runtime compatibility date
   "compatibility_date": "2026-09-22",
-  "workers_dev": true
-}       # Exposes a *.workers.dev URL for testing
 
-# ── KV Namespace ────────────────────────────────────────────
-# REQUIRED — worker.js depends on env.KV for three critical paths:
-#
-#   1. GET  /api/templates    — Caches the monthly GitHub fetch
-#   2. POST /api/deploy       — Stores per-job state and log lines
-#   3. GET  /api/deploy/:id   — Reads per-job state; returns HTTP 503
-#                               without this binding, which breaks
-#                               all deploy-progress polling on the
-#                               frontend.
-#
-# ┌─────────────────────────────────────────────────────────┐
-# │  YOUR ID IS MISSING — follow the steps below once,     │
-# │  then commit the file.                                  │
-# │                                                         │
-# │  OPTION A — Cloudflare Dashboard (no CLI needed)       │
-# │  ① Open dash.cloudflare.com → Workers & Pages → KV    │
-# │  ② Click "Create a namespace"                          │
-# │  ③ Name it anything (e.g. DEPLOY_KV) → click Create   │
-# │  ④ Copy the ID shown in the namespace list             │
-# │  ⑤ Paste it into  id = "..."  below                   │
-# │                                                         │
-# │  OPTION B — Wrangler CLI                               │
-# │  $ wrangler kv namespace create "DEPLOY_KV"            │
-# │    → prints:  id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  │
-# │  $ wrangler kv namespace create "DEPLOY_KV" --preview  │
-# │    → prints:  preview_id = "yyyyyy..."  (optional)     │
-# │  Paste both 32-char hex IDs into the fields below.     │
-# └─────────────────────────────────────────────────────────┘
-#
-[[kv_namespaces]]
-binding    = "KV"
-id         = "0fe31bd377ec4aa2bbe287e54d5a4873"          # ← PASTE your production KV namespace ID here (32 hex chars)
-preview_id = ""          # ← PASTE your preview   KV namespace ID here (optional)
+  // Expose *.workers.dev for testing
+  "workers_dev": true,
 
-# ── Monthly cron: clear the template cache on the 1st ──────
-# Matches the `scheduled` export in worker.js.
-[triggers]
-crons = ["0 0 1 * *"]
+  // ── KV Namespace ──────────────────────────────────────────
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "0fe31bd377ec4aa2bbe287e54d5a4873"
+    }
+  ],
 
-# ── Secrets ─────────────────────────────────────────────────
-# Store secrets via the Cloudflare Dashboard:
-#   Worker → Settings → Variables → Add variable (mark as Secret)
-# Or via the CLI:
-#   wrangler secret put <NAME>
-#
-# NEVER put secret values directly in this file.
-#
-# GITHUB_TOKEN  (optional)
-#   When set, GET /api/templates fetches live GitHub trending repos
-#   and caches them in KV for the month.
-#   Without it, /api/templates falls back to the 10 static templates
-#   embedded in worker.js — the platform still works fine.
-#
-#   wrangler secret put GITHUB_TOKEN
-#
-# Security note: the only values stored in the KV namespace are:
-#   - Cached template lists (no credentials)
-#   - Deploy job state (includes a one-time password that is
-#     burned — replaced with a redacted placeholder — immediately
-#     after the first successful retrieval)
-#
-# User-provided API tokens (cfToken, ghToken) are NEVER written
-# to KV, logs, or any persistent storage. They are used only for
-# the duration of the deploy pipeline and then discarded.
+  // ── Scheduled Tasks ──────────────────────────────────────
+  // Run at 00:00 UTC on the first day of every month.
+  "triggers": {
+    "crons": [
+      "0 0 1 * *"
+    ]
+  }
+}
