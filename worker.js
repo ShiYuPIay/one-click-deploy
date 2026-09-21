@@ -774,12 +774,21 @@ async function kvPut(env, key, val, opts) {
 // ═══════════════════════════════════════════════════════════
 
 // GET /api/templates
+function templateDailyCacheKey(date = new Date()) {
+  return `templates:daily:${date.toISOString().slice(0,10)}`;
+}
+
+function templateMonthlyCycleKey(date = new Date()) {
+  return `templates:monthly:${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
 async function handleGetTemplates(request, env) {
   const now = new Date();
-  const cacheKey = `templates:${now.getFullYear()}-${now.getMonth() + 1}`;
+  const dailyKey = templateDailyCacheKey(now);
+  const monthKey = templateMonthlyCycleKey(now);
 
-  const cached = await kvGet(env, cacheKey);
-  if (cached) return json({ ...JSON.parse(cached), source:'cache' });
+  const cached = await kvGet(env, dailyKey);
+  if (cached) return json({ ...JSON.parse(cached), source:'cache', refreshPolicy:'daily', catalogPolicy:'monthly' });
 
   let templates = STATIC_TEMPLATES, source = 'static';
 
@@ -815,8 +824,18 @@ async function handleGetTemplates(request, env) {
     } catch (_) { /* fall back to static templates on any error */ }
   }
 
-  const payload = { templates, updatedAt:now.toISOString(), source };
-  await kvPut(env, cacheKey, JSON.stringify(payload), { expirationTtl:30*86400 });
+  const payload = {
+    templates,
+    updatedAt: now.toISOString(),
+    source,
+    refreshPolicy: 'daily',
+    catalogPolicy: 'monthly',
+    catalogCycle: monthKey.replace('templates:monthly:', ''),
+  };
+  // Daily cache keeps the public catalog fresh without waiting for the monthly
+  // rollover. The first refresh of a new month naturally creates a new cycle.
+  await kvPut(env, dailyKey, JSON.stringify(payload), { expirationTtl:26*60*60 });
+  await kvPut(env, monthKey, JSON.stringify({ updatedAt: now.toISOString(), source }), { expirationTtl:32*86400 });
   return json(payload);
 }
 
@@ -1111,12 +1130,18 @@ export default {
     }
   },
 
-  // Monthly cron: clear the template cache on the 1st of each month
+  // Daily cron: invalidate today's template snapshot so the next request
+  // fetches the current GitHub catalog. The monthly cycle key is also rotated
+  // automatically on the first UTC day of each month.
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       const now = new Date();
-      const key = `templates:${now.getFullYear()}-${now.getMonth()+1}`;
-      if (env.KV) try { await env.KV.delete(key); } catch (_) {}
+      if (env.KV) {
+        try { await env.KV.delete(templateDailyCacheKey(now)); } catch (_) {}
+        if (now.getUTCDate() === 1) {
+          try { await env.KV.delete(templateMonthlyCycleKey(now)); } catch (_) {}
+        }
+      }
     })());
   },
 };
