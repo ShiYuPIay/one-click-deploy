@@ -26,6 +26,12 @@
   // GitHub Search API.  wrangler secret put GITHUB_TOKEN
   // Without it the Worker falls back to the built-in static template list.
 
+  // Optional: set a TYPESAFE_API_KEY to enable Jev-powered AI template
+  // recommendation (/api/recommend) and deployment error classification.
+  //   wrangler secret put TYPESAFE_API_KEY
+  // Get a key at https://console.typesafe.ai   Without it those features are
+  // disabled gracefully — /api/recommend returns 503 and error logs are plain.
+
   // Daily cron: invalidates the daily template cache so the Worker re-fetches
   // fresh data from the GitHub Search API on the next /api/templates request.
   // On the 1st of each month the monthly cycle key is also rotated.

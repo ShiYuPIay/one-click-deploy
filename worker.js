@@ -76,6 +76,15 @@ a{color:var(--p)}
 .ph h2{font-size:22px;font-weight:800;margin:0 0 8px}
 .ph p{font-size:13px;color:var(--mu);margin:0}
 .mon-tag{font-size:11px;background:#fff7e6;color:var(--wn);padding:2px 10px;border-radius:20px;border:1px solid rgba(217,119,6,.27);font-weight:700}
+.ai-box{background:linear-gradient(135deg,rgba(26,179,148,.07),rgba(26,179,148,.03));border:1px solid rgba(26,179,148,.3);border-radius:12px;padding:16px 20px;margin-bottom:22px}
+.ai-hd{font-size:13px;font-weight:700;color:var(--p);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-bd{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ai-bd textarea{flex:1;min-width:200px;font-size:13px;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--b);color:var(--t);resize:none;font-family:inherit;line-height:1.5;transition:border-color .18s}
+.ai-bd textarea:focus{outline:none;border-color:var(--p)}
+.ai-res{margin-top:8px;font-size:13px}
+.ai-rec{background:rgba(26,179,148,.08);border:1px solid rgba(26,179,148,.2);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:8px}
+.ai-rec .ar-nm{font-weight:700;color:var(--p)}
+.ai-rec .ar-pr{font-size:11px;background:rgba(26,179,148,.12);color:var(--p);padding:1px 7px;border-radius:10px;border:1px solid rgba(26,179,148,.2)}
 .tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px;margin-bottom:28px}
 .tc{background:var(--cd);border:2px solid var(--br);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .tc:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
@@ -357,6 +366,17 @@ function pgTpl() {
       +'<p class="mt16 mu">正在从云端拉取本月热门项目...</p></div></div>';
   }
 
+  /* ── AI recommendation panel (only shows when TYPESAFE_API_KEY is configured) ── */
+  var aiPanel = ''
+    + '<div class="ai-box">'
+    + '<div class="ai-hd">🤖 AI 智能推荐 <span class="sm mu" style="font-weight:400;font-size:12px">（可选）</span></div>'
+    + '<div class="ai-bd">'
+    + '<textarea id="ai-desc" rows="2" maxlength="1000" placeholder="用几句话描述您的项目，例如：技术博客，支持 Markdown 文章，注重 SEO；或：企业官网，多语言，交互复杂"></textarea>'
+    + '<button id="ai-btn" class="btn btn-g" onclick="aiSuggest()" style="white-space:nowrap">AI 推荐</button>'
+    + '</div>'
+    + '<div class="ai-res" id="ai-res"></div>'
+    + '</div>';
+
   var cards = S.tmpls.map(tplCard).join('');
   var upSlot = '<div class="up-slot"><div style="font-size:32px">📁</div>'
     +'<div style="font-size:13px;font-weight:700">自定义上传</div>'
@@ -366,6 +386,7 @@ function pgTpl() {
   var bLbl  = S.sel ? '🚀 立即部署「'+esc(S.sel.name)+'」' : '请先点击选择一个模板';
   var wn    = S.sel && !S.sel.ok ? '<p class="mt12 sm wp">⚠️ 该模板有兼容性限制，部署时会显示详细原因</p>' : '';
   return '<div class="pg-w">'+hdr
+    +aiPanel
     +'<div class="tg">'+cards+upSlot+'</div>'
     +'<div style="text-align:center">'
     +'<button class="'+bCls+'" style="min-width:280px" '+dsbld+' onclick="beginDply()">'+bLbl+'</button>'+wn
@@ -373,18 +394,20 @@ function pgTpl() {
 }
 
 function tplCard(t) {
-  var sel = S.sel && S.sel.id === t.id;
+  var sel  = S.sel && S.sel.id === t.id;
+  var aiRec = S.aiRec === t.id;
   var ss  = 'https://api.microlink.io/?url='+encodeURIComponent(t.url)+'&screenshot=true&meta=false&embed=screenshot.url';
   var sb  = sel ? '<span class="tc-badge" style="left:8px;background:var(--p);color:#fff">✓ 已选择</span>' : '';
+  var ab  = (!sel && aiRec) ? '<span class="tc-badge" style="left:8px;background:rgba(26,179,148,.85);color:#fff">🤖 AI 推荐</span>' : '';
   var wb  = !t.ok ? '<span class="tc-badge" style="right:8px;background:rgba(217,119,6,.85);color:#fff">⚠ 有限制</span>' : '';
   var fs  = 'style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:'+t.clr+'18;color:'+t.clr+';border:1px solid '+t.clr+'33"';
   /* FIX: was  onerror="this.style.display=\'none\'"  → template-literal
      processed \'  →  '  which terminated the outer JS string → syntax error.
      Fix: use a named handler doImgErr(this) to avoid inline string escaping. */
-  return '<div class="tc'+(sel?' sel':'')+'" onclick="selTpl('+t.id+')">'
+  return '<div class="tc'+(sel?' sel':aiRec?' sel':'')+(aiRec?' ai-hi':'')+'" onclick="selTpl('+t.id+')">'
     +'<div class="tc-th" style="background:linear-gradient(135deg,'+t.clr+'18,'+t.clr+'36)">'
     +'<img src="'+ss+'" alt="" onerror="doImgErr(this)" loading="lazy">'
-    +'<span class="tc-ico">'+t.icon+'</span>'+sb+wb+'</div>'
+    +'<span class="tc-ico">'+t.icon+'</span>'+sb+ab+wb+'</div>'
     +'<div class="tc-bd"><div class="tc-nm">'+esc(t.name)+'</div>'
     +'<div class="tc-dc">'+esc(t.desc)+'</div>'
     +'<div class="tc-ft"><span '+fs+'>'+esc(t.fw)+'</span>'
@@ -400,6 +423,48 @@ function initTpl() {
     S.tmpls = (d.templates && d.templates.length) ? d.templates : TDATA;
     S.tplsLoaded = true; draw();
   }).catch(function(){ S.tmpls = TDATA; S.tplsLoaded = true; draw(); });
+}
+
+function aiSuggest() {
+  var desc = (document.getElementById('ai-desc') || {}).value || '';
+  desc = desc.trim();
+  if (desc.length < 5) { alert('请先描述您的项目（至少 5 个字符）'); return; }
+  var btn = document.getElementById('ai-btn');
+  var res = document.getElementById('ai-res');
+  btn.disabled = true; btn.textContent = '分析中…';
+  res.innerHTML = '';
+  fetch('/api/recommend', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description: desc }),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.textContent = 'AI 推荐';
+    if (d.error) {
+      res.innerHTML = '<p class="sm wp" style="margin:6px 0">⚠ ' + esc(d.error) + '</p>';
+      return;
+    }
+    S.aiRec = d.templateId;
+    /* Auto-select the recommended template */
+    var t = S.tmpls.filter(function(x) { return x.id === d.templateId; })[0];
+    if (t) S.sel = t;
+    draw();
+    /* Show result banner (draw() already redraws #ai-res) */
+    var el = document.getElementById('ai-res');
+    if (!el) return;
+    var pct = Math.round((d.confidence || 0) * 100);
+    var ssr = d.needsSSR ? '<span class="sm wp" style="margin-left:8px">⚠ 该项目可能需要 SSR — 请注意兼容性</span>' : '';
+    el.innerHTML = '<div class="ai-rec">'
+      + '<span>✨ 推荐</span>'
+      + '<span class="ar-nm">' + esc(d.templateName) + '</span>'
+      + (pct ? '<span class="ar-pr">置信度 ' + pct + '%</span>' : '')
+      + ssr + '</div>';
+  })
+  .catch(function() {
+    btn.disabled = false; btn.textContent = 'AI 推荐';
+    res.innerHTML = '<p class="sm wp" style="margin:6px 0">⚠ 网络请求失败，请稍后重试</p>';
+  });
 }
 
 function selTpl(id) {
@@ -1112,6 +1177,114 @@ async function handleDeployStatus(deployId, env) {
 }
 
 // GET /health  (JSON health check for monitoring tools)
+// ─── TypeSafe AI (Jev) helpers ───────────────────────────────────────────────
+
+// Call the TypeSafe System One API with state and typed questions.
+// Throws on HTTP error or network failure.
+async function callJev(state, questions, apiKey) {
+  const resp = await fetch('https://api.typesafe.ai/v1/systemone', {
+    method: 'POST',
+    headers: {
+      Authorization:  `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'User-Agent':   'deploy-tool/1.0',
+    },
+    body: JSON.stringify({ model: 'jev-latest', state, questions }),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(`TypeSafe API ${resp.status}: ${err.error?.message || 'request failed'}`);
+  }
+  return resp.json();
+}
+
+// Stable mapping from Jev choice keys → STATIC_TEMPLATES id and display name.
+const JEV_FW = {
+  astro:   { id:1,  name:'Astro',     framework:'Astro' },
+  react:   { id:2,  name:'React',     framework:'React' },
+  vue3:    { id:3,  name:'Vue 3',     framework:'Vue 3' },
+  svelte:  { id:4,  name:'SvelteKit', framework:'SvelteKit' },
+  vite:    { id:5,  name:'Vite',      framework:'Vite' },
+  hugo:    { id:7,  name:'Hugo',      framework:'Hugo' },
+  gatsby:  { id:8,  name:'Gatsby',    framework:'Gatsby' },
+  angular: { id:10, name:'Angular',   framework:'Angular' },
+};
+
+// POST /api/recommend  { description: string }
+// Uses Jev to recommend the best template, detect SSR requirements,
+// and gauge project complexity — all in a single API call.
+async function handleRecommend(request, env) {
+  if (!env.TYPESAFE_API_KEY) {
+    return json({
+      error: 'TYPESAFE_API_KEY not configured. Set it with: wrangler secret put TYPESAFE_API_KEY',
+    }, 503);
+  }
+
+  let body;
+  try { body = await request.json(); } catch (_) {
+    return json({ error: 'Request body must be valid JSON.' }, 400);
+  }
+
+  const { description } = body;
+  if (!description || typeof description !== 'string' || description.trim().length < 5) {
+    return json({ error: 'description must be at least 5 characters.' }, 400);
+  }
+  if (description.length > 1000) {
+    return json({ error: 'description must be 1000 characters or fewer.' }, 400);
+  }
+
+  let jevResult;
+  try {
+    jevResult = await callJev(description.trim(), {
+      template: {
+        type: 'choice',
+        instructions: 'Which static site framework best matches this project description?',
+        criteria: {
+          astro:   'Content sites, blogs, documentation — excellent performance and mixed static/dynamic pages',
+          react:   'Interactive web apps with complex UI state using the React ecosystem',
+          vue3:    'Interactive web apps that prefer the Vue.js component and reactivity model',
+          svelte:  'Interactive apps with minimal bundle size using Svelte components',
+          vite:    'Simple static pages needing fast tooling and no strong framework preference',
+          hugo:    'Content-heavy sites and blogs driven by Markdown files and Go templates',
+          gatsby:  'React-based content sites with a GraphQL data layer',
+          angular: 'Enterprise web apps with strict MVC structure and TypeScript-first approach',
+        },
+      },
+      needs_ssr: {
+        type: 'noul',
+        instructions: 'Does this project require server-side rendering, dynamic server APIs, user authentication sessions, or a persistent backend runtime that cannot be served as a static file?',
+        criteria: { true: 'The project needs SSR or a live server process', false: 'A static site build is sufficient' },
+      },
+      complexity: {
+        type: 'score',
+        instructions: 'How complex is this project relative to a simple landing page?',
+        criteria: [
+          'Simple — a landing page, personal blog, or small informational site',
+          'Moderate — dynamic data display, multiple views, or basic form handling',
+          'Complex — authentication, real-time features, heavy API integration, or multi-tenant needs',
+        ],
+      },
+    }, env.TYPESAFE_API_KEY);
+  } catch (err) {
+    return json({ error: `AI recommendation unavailable: ${err.message}` }, 502);
+  }
+
+  const a   = jevResult.answers;
+  const fw  = a.template?.choice || 'astro';
+  const tpl = JEV_FW[fw] || JEV_FW.astro;
+
+  return json({
+    templateId:    tpl.id,
+    templateName:  tpl.name,
+    framework:     tpl.framework,
+    needsSSR:      (a.needs_ssr?.noul || 0) > 0.6,
+    complexity:    a.complexity?.score || 0,
+    confidence:    a.template?.confidence || 0,
+    probabilities: a.template?.probabilities || {},
+    usage:         jevResult.usage,
+  });
+}
+
 function handleHealth() {
   return json({
     status: 'ok',
@@ -1121,11 +1294,12 @@ function handleHealth() {
     ui: 'Visit the root path / to open the visual control panel.',
     endpoints: {
       'GET /':                   'HTML control panel',
-      'GET /api/templates':      'Template list',
-      'GET /api/search?q=':      'Search templates',
+      'GET /api/templates':       'Template list',
+      'GET /api/search?q=':       'Search templates',
       'POST /api/test-connection':'Validate tokens',
-      'POST /api/deploy':        'Start a deploy job',
-      'GET /api/deploy/:id':     'Poll deploy progress',
+      'POST /api/recommend':      'AI template recommendation (requires TYPESAFE_API_KEY)',
+      'POST /api/deploy':         'Start a deploy job',
+      'GET /api/deploy/:id':      'Poll deploy progress',
       'GET /health':             'Health check (this response)',
     },
     timestamp: new Date().toISOString(),
@@ -1271,12 +1445,58 @@ async function runPipeline(deployId, config, env) {
 
   } catch (err) {
     // Never log the error message directly if it might contain a secret.
-    // The template name and generic message are safe to log.
     const raw   = await kvGet(env, `deploy:${deployId}`);
     const state = raw ? JSON.parse(raw) : {logs:[]};
-    if (!state.logs) state.logs=[];
-    state.status='failed'; state.failType='error'; state.failReason=err.message;
-    state.logs.push({ts:new Date().toISOString().slice(11,19), text:`[Fatal Error] ${err.message}`, type:'error'});
+    if (!state.logs) state.logs = [];
+    state.status = 'failed'; state.failType = 'error'; state.failReason = err.message;
+    state.logs.push({ ts:new Date().toISOString().slice(11,19), text:`[Fatal Error] ${err.message}`, type:'error' });
+
+    // Use TypeSafe Jev to classify the error and surface an actionable fix tip.
+    // This is best-effort — a Jev failure must never suppress the real error.
+    if (env.TYPESAFE_API_KEY) {
+      try {
+        const ev = await callJev(err.message, {
+          error_type: {
+            type: 'choice',
+            instructions: 'What kind of deployment error is this?',
+            criteria: {
+              missing_dependency: 'npm package not found or install command failed',
+              build_command:      'the build command failed (compilation error, syntax error, or missing source file)',
+              output_dir:         'the expected build output directory does not exist after the build',
+              auth_token:         'invalid, expired, or insufficiently-scoped API token or credential',
+              repo_conflict:      'repository name already taken, or permission denied on repo creation',
+              network:            'network timeout, DNS failure, or external service unreachable',
+              config:             'invalid or missing project configuration file',
+              other:              'any other error not in this list',
+            },
+          },
+          user_fixable: {
+            type: 'noul',
+            instructions: 'Can the user fix this error by changing credentials, retrying, or adjusting settings — without modifying source code?',
+          },
+        }, env.TYPESAFE_API_KEY);
+
+        const ea = ev.answers;
+        const etype   = ea.error_type?.choice || 'other';
+        const fixable = (ea.user_fixable?.noul || 0) > 0.5;
+        const TIPS = {
+          missing_dependency: 'Verify all required packages are listed in package.json.',
+          build_command:      'Check the build command and ensure all source files are present in the repository.',
+          output_dir:         'Confirm the output directory in your template config matches where the build actually writes files.',
+          auth_token:         'Re-check your API tokens — they may have expired or lack the required scopes.',
+          repo_conflict:      'A repository with this name may already exist. Retry to generate a fresh name.',
+          network:            'A transient network error occurred. Try deploying again.',
+          config:             'Review your framework config file (e.g. vite.config.js, astro.config.mjs, hugo.toml).',
+          other:              'Review the error message above for additional clues.',
+        };
+        state.logs.push({ ts:new Date().toISOString().slice(11,19), text:`[Diagnosis] Error class: ${etype}`, type:'warn' });
+        state.logs.push({ ts:new Date().toISOString().slice(11,19), text:`[Diagnosis] ${TIPS[etype] || TIPS.other}`, type: fixable ? 'info' : 'warn' });
+        if (!fixable) {
+          state.logs.push({ ts:new Date().toISOString().slice(11,19), text:'[Diagnosis] This error likely requires a source code change. Inspect the template starter files.', type:'warn' });
+        }
+      } catch (_) { /* classification is best-effort */ }
+    }
+
     await kvPut(env, `deploy:${deployId}`, JSON.stringify(state), {expirationTtl:7200});
   }
 }
@@ -1303,6 +1523,7 @@ export default {
       if (path === '/api/templates'       && request.method === 'GET')  return handleGetTemplates(request, env);
       if (path === '/api/search'          && request.method === 'GET')  return handleSearch(request);
       if (path === '/api/test-connection' && request.method === 'POST') return handleTestConnection(request);
+      if (path === '/api/recommend'       && request.method === 'POST') return handleRecommend(request, env);
       if (path === '/api/deploy'          && request.method === 'POST') return handleDeploy(request, env, ctx);
 
       const dm = path.match(/^\/api\/deploy\/([a-zA-Z0-9-]+)$/);
