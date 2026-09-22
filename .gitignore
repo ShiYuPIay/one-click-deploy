@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Wrangler build output
+.wrangler/
+
+# Local environment overrides
+.dev.vars
+.env.local
+
+# Editor/OS artifacts
+.DS_Store
+*.swp

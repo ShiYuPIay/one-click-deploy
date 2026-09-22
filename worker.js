@@ -667,6 +667,87 @@ const STATIC_TEMPLATES = [
 ];
 
 // ═══════════════════════════════════════════════════════════
+// TEMPLATE STARTERS
+// Minimal but fully-functional source files pushed to the new
+// GitHub repo so the first Cloudflare Pages build succeeds.
+// Each key matches a framework string in STATIC_TEMPLATES.
+// ═══════════════════════════════════════════════════════════
+
+const TEMPLATE_STARTERS = {
+
+  'Astro': [
+    { path:'package.json', text:'{\n  "name": "my-astro-site",\n  "version": "1.0.0",\n  "scripts": {\n    "build": "astro build",\n    "dev":   "astro dev"\n  },\n  "devDependencies": {\n    "astro": "^4.16.0"\n  }\n}\n' },
+    { path:'astro.config.mjs', text:'import { defineConfig } from "astro/config";\nexport default defineConfig({});\n' },
+    { path:'src/pages/index.astro', text:'---\n---\n<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>My Astro Site</title>\n  <style>body{font-family:system-ui;margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff0eb}h1{color:#ff5d01;font-size:3rem;margin:0}p{color:#666;margin-top:8px}</style>\n</head>\n<body>\n  <div style="text-align:center">\n    <h1>Astro Starter</h1>\n    <p>Edit <code>src/pages/index.astro</code> to customize this page.</p>\n  </div>\n</body>\n</html>\n' },
+  ],
+
+  'React': [
+    { path:'package.json', text:'{\n  "name": "my-react-site",\n  "version": "1.0.0",\n  "scripts": {\n    "build": "vite build",\n    "dev":   "vite"\n  },\n  "dependencies": {\n    "react":     "^18.3.0",\n    "react-dom": "^18.3.0"\n  },\n  "devDependencies": {\n    "@vitejs/plugin-react": "^4.3.0",\n    "vite": "^5.4.0"\n  }\n}\n' },
+    { path:'index.html', text:'<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>React App</title>\n</head>\n<body>\n  <div id="root"></div>\n  <script type="module" src="/src/main.jsx"></script>\n</body>\n</html>\n' },
+    { path:'vite.config.js', text:'import { defineConfig } from "vite";\nimport react from "@vitejs/plugin-react";\nexport default defineConfig({ plugins: [react()], build: { outDir: "build" } });\n' },
+    { path:'src/main.jsx', text:'import React from "react";\nimport ReactDOM from "react-dom/client";\nimport App from "./App.jsx";\nReactDOM.createRoot(document.getElementById("root")).render(\n  <React.StrictMode><App /></React.StrictMode>\n);\n' },
+    { path:'src/App.jsx', text:'import React from "react";\nexport default function App() {\n  return (\n    <div style={{fontFamily:"system-ui",margin:0,display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#f0f9ff"}}>\n      <div style={{textAlign:"center"}}>\n        <h1 style={{color:"#0ea5e9",fontSize:"3rem",margin:0}}>React Starter</h1>\n        <p style={{color:"#64748b",marginTop:8}}>Edit <code>src/App.jsx</code> to customize.</p>\n      </div>\n    </div>\n  );\n}\n' },
+  ],
+
+  'Vue 3': [
+    { path:'package.json', text:'{\n  "name": "my-vue-site",\n  "version": "1.0.0",\n  "scripts": {\n    "build": "vite build",\n    "dev":   "vite"\n  },\n  "dependencies": {\n    "vue": "^3.5.0"\n  },\n  "devDependencies": {\n    "@vitejs/plugin-vue": "^5.1.0",\n    "vite": "^5.4.0"\n  }\n}\n' },
+    { path:'index.html', text:'<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Vue App</title>\n</head>\n<body>\n  <div id="app"></div>\n  <script type="module" src="/src/main.js"></script>\n</body>\n</html>\n' },
+    { path:'vite.config.js', text:'import { defineConfig } from "vite";\nimport vue from "@vitejs/plugin-vue";\nexport default defineConfig({ plugins: [vue()], build: { outDir: "dist" } });\n' },
+    { path:'src/main.js', text:'import { createApp } from "vue";\nimport App from "./App.vue";\ncreateApp(App).mount("#app");\n' },
+    { path:'src/App.vue', text:'<template>\n  <div class="wrap">\n    <h1>Vue Starter</h1>\n    <p>Edit <code>src/App.vue</code> to customize.</p>\n  </div>\n</template>\n<style>\nbody{margin:0;font-family:system-ui;background:#f0fdf4;display:flex;align-items:center;justify-content:center;min-height:100vh}\n.wrap{text-align:center}\nh1{color:#42b883;font-size:3rem;margin:0}\np{color:#64748b;margin-top:8px}\n</style>\n' },
+  ],
+
+  'SvelteKit': [
+    { path:'package.json', text:'{\n  "name": "my-svelte-site",\n  "version": "1.0.0",\n  "scripts": {\n    "build": "vite build",\n    "dev":   "vite"\n  },\n  "dependencies": {\n    "svelte": "^4.2.0"\n  },\n  "devDependencies": {\n    "@sveltejs/vite-plugin-svelte": "^3.1.0",\n    "vite": "^5.4.0"\n  }\n}\n' },
+    { path:'index.html', text:'<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Svelte App</title>\n</head>\n<body>\n  <div id="app"></div>\n  <script type="module" src="/src/main.js"></script>\n</body>\n</html>\n' },
+    { path:'vite.config.js', text:'import { defineConfig } from "vite";\nimport { svelte } from "@sveltejs/vite-plugin-svelte";\nexport default defineConfig({ plugins: [svelte()], build: { outDir: "build" } });\n' },
+    { path:'src/main.js', text:'import App from "./App.svelte";\nconst app = new App({ target: document.getElementById("app") });\nexport default app;\n' },
+    { path:'src/App.svelte', text:'<div class="wrap">\n  <h1>Svelte Starter</h1>\n  <p>Edit <code>src/App.svelte</code> to customize.</p>\n</div>\n<style>\n:global(body){margin:0;font-family:system-ui;background:#fff5f2;display:flex;align-items:center;justify-content:center;min-height:100vh}\n.wrap{text-align:center}\nh1{color:#ff3e00;font-size:3rem;margin:0}\np{color:#64748b;margin-top:8px}\n</style>\n' },
+  ],
+
+  'Vite': [
+    { path:'package.json', text:'{\n  "name": "my-vite-site",\n  "version": "1.0.0",\n  "scripts": {\n    "build": "vite build",\n    "dev":   "vite"\n  },\n  "devDependencies": {\n    "vite": "^5.4.0"\n  }\n}\n' },
+    { path:'index.html', text:'<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Vite App</title>\n  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui;background:#0f0f23;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.hero{text-align:center}h1{font-size:3.5rem;font-weight:900;color:#646cff;margin-bottom:1rem}p{color:#888;font-size:1.1rem}code{background:#1e1e2e;padding:2px 8px;border-radius:4px;font-size:.9em;color:#a18fff}</style>\n</head>\n<body>\n  <div class="hero">\n    <h1>Vite Starter</h1>\n    <p>Edit <code>index.html</code> to customize.</p>\n  </div>\n  <script type="module" src="/src/main.js"></script>\n</body>\n</html>\n' },
+    { path:'vite.config.js', text:'import { defineConfig } from "vite";\nexport default defineConfig({ build: { outDir: "dist" } });\n' },
+    { path:'src/main.js', text:'console.log("Vite app loaded!");\n' },
+  ],
+
+  'Hugo': [
+    { path:'hugo.toml', text:'baseURL = "https://example.org/"\nlanguageCode = "en-us"\ntitle = "My Hugo Site"\n' },
+    { path:'content/_index.md', text:'---\ntitle: "Welcome"\n---\n\n# Hugo Starter\n\nEdit `content/_index.md` to customize this page.\n' },
+    { path:'layouts/_default/baseof.html', text:'<!DOCTYPE html>\n<html lang="{{ .Site.LanguageCode }}">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>\n  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui;background:#fff8f8;color:#1a2234}main{max-width:720px;margin:60px auto;padding:0 24px}h1{color:#ff4088;font-size:2.5rem;margin-bottom:16px}p{line-height:1.7;color:#555}</style>\n</head>\n<body><main>{{ block "main" . }}{{ end }}</main></body>\n</html>\n' },
+    { path:'layouts/index.html', text:'{{ define "main" }}{{ .Content }}{{ end }}\n' },
+    { path:'layouts/_default/single.html', text:'{{ define "main" }}<h1>{{ .Title }}</h1>{{ .Content }}{{ end }}\n' },
+  ],
+
+  'Gatsby': [
+    { path:'package.json', text:'{\n  "name": "my-gatsby-site",\n  "version": "1.0.0",\n  "scripts": {\n    "build":   "gatsby build",\n    "develop": "gatsby develop"\n  },\n  "dependencies": {\n    "gatsby":    "^5.13.0",\n    "react":     "^18.3.0",\n    "react-dom": "^18.3.0"\n  }\n}\n' },
+    { path:'gatsby-config.js', text:'module.exports = {\n  siteMetadata: { title: "My Gatsby Site", siteUrl: "https://example.com" },\n  plugins: []\n};\n' },
+    { path:'src/pages/index.js', text:'import * as React from "react";\nexport default function IndexPage() {\n  return (\n    <main style={{fontFamily:"system-ui",margin:0,display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#faf0ff"}}>\n      <div style={{textAlign:"center"}}>\n        <h1 style={{color:"#663399",fontSize:"3rem",margin:0}}>Gatsby Starter</h1>\n        <p style={{color:"#64748b",marginTop:8}}>Edit <code>src/pages/index.js</code> to customize.</p>\n      </div>\n    </main>\n  );\n}\nexport const Head = () => <title>My Gatsby Site</title>;\n' },
+  ],
+
+  'Angular': [
+    { path:'package.json', text:'{\n  "name": "my-angular-site",\n  "version": "1.0.0",\n  "scripts": {\n    "ng":    "ng",\n    "start": "ng serve",\n    "build": "ng build --configuration production"\n  },\n  "dependencies": {\n    "@angular/animations":             "^18.2.0",\n    "@angular/common":                 "^18.2.0",\n    "@angular/compiler":               "^18.2.0",\n    "@angular/core":                   "^18.2.0",\n    "@angular/forms":                  "^18.2.0",\n    "@angular/platform-browser":       "^18.2.0",\n    "@angular/platform-browser-dynamic":"^18.2.0",\n    "@angular/router":                 "^18.2.0",\n    "rxjs":   "~7.8.0",\n    "tslib":  "^2.3.0",\n    "zone.js":"~0.14.2"\n  },\n  "devDependencies": {\n    "@angular/build":         "^18.2.0",\n    "@angular/cli":           "^18.2.0",\n    "@angular/compiler-cli":  "^18.2.0",\n    "typescript": "~5.5.0"\n  }\n}\n' },
+    // outputPath: {"base":"dist","browser":""} puts browser files directly in dist/
+    { path:'angular.json', text:'{\n  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",\n  "version": 1,\n  "newProjectRoot": "projects",\n  "projects": {\n    "my-angular-site": {\n      "projectType": "application",\n      "root": "",\n      "sourceRoot": "src",\n      "prefix": "app",\n      "architect": {\n        "build": {\n          "builder": "@angular/build:application",\n          "options": {\n            "outputPath": { "base": "dist", "browser": "" },\n            "index": "src/index.html",\n            "browser": "src/main.ts",\n            "polyfills": ["zone.js"],\n            "tsConfig": "tsconfig.app.json",\n            "assets": [{"glob":"**/*","input":"public"}],\n            "styles": [],\n            "scripts": []\n          },\n          "configurations": {\n            "production": {\n              "budgets": [{"type":"initial","maximumWarning":"500kB","maximumError":"1MB"},{"type":"anyComponentStyle","maximumWarning":"4kB","maximumError":"8kB"}],\n              "outputHashing": "all"\n            }\n          }\n        }\n      }\n    }\n  }\n}\n' },
+    { path:'tsconfig.json', text:'{\n  "compilerOptions": {\n    "outDir": "./dist/out-tsc",\n    "strict": true,\n    "noImplicitOverride": true,\n    "noPropertyAccessFromIndexSignature": true,\n    "noImplicitReturns": true,\n    "noFallthroughCasesInSwitch": true,\n    "skipLibCheck": true,\n    "esModuleInterop": true,\n    "sourceMap": true,\n    "declaration": false,\n    "experimentalDecorators": true,\n    "moduleResolution": "bundler",\n    "importHelpers": true,\n    "target": "ES2022",\n    "module": "ES2022",\n    "lib": ["ES2022","dom"]\n  },\n  "angularCompilerOptions": {\n    "enableI18nLegacyMessageIdFormat": false,\n    "strictInjectionParameters": true,\n    "strictInputAccessModifiers": true,\n    "strictTemplates": true\n  }\n}\n' },
+    { path:'tsconfig.app.json', text:'{\n  "extends": "./tsconfig.json",\n  "compilerOptions": { "outDir": "./out-tsc/app", "types": [] },\n  "files": ["src/main.ts"],\n  "include": ["src/**/*.d.ts"]\n}\n' },
+    { path:'src/index.html', text:'<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8">\n  <title>My Angular Site</title>\n  <base href="/">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n</head>\n<body>\n  <app-root></app-root>\n</body>\n</html>\n' },
+    { path:'src/main.ts', text:'import { bootstrapApplication } from "@angular/platform-browser";\nimport { AppComponent } from "./app/app.component";\nbootstrapApplication(AppComponent).catch(err => console.error(err));\n' },
+    { path:'src/app/app.component.ts', text:'import { Component } from "@angular/core";\n@Component({\n  selector: "app-root",\n  standalone: true,\n  template: `<div style="font-family:system-ui;margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff5f5"><div style="text-align:center"><h1 style="color:#dd0031;font-size:3rem;margin:0">Angular Starter</h1><p style="color:#64748b;margin-top:8px">Edit <code>src/app/app.component.ts</code> to customize.</p></div></div>`\n})\nexport class AppComponent {}\n' },
+    { path:'public/.gitkeep', text:'' },
+  ],
+
+};
+
+// Return the template starter files for a given template object.
+// Falls back to an empty array (no files pushed) for unknown frameworks.
+function getStarterFiles(tpl) {
+  const fw = tpl.framework || tpl.fw || '';
+  return TEMPLATE_STARTERS[fw] || [];
+}
+
+// ═══════════════════════════════════════════════════════════
 // CORS — open access for the public API
 // ═══════════════════════════════════════════════════════════
 
@@ -733,6 +814,92 @@ function generatePassword() {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, b => pool[b % pool.length]).join('');
+}
+
+// Base64-encode a string for the GitHub Contents API.
+// All starter files are pure ASCII so btoa() is sufficient.
+function b64(text) {
+  return btoa(text);
+}
+
+// Push a single file to a GitHub repo using the Contents API.
+// path  — the file path inside the repo (e.g. "src/main.jsx")
+// text  — the raw file content (ASCII/UTF-8)
+// sha   — (optional) SHA of an existing file to update; omit for new files
+async function pushFileToRepo(owner, repo, path, text, token, sha) {
+  const body = { message: `feat: add ${path}`, content: b64(text) };
+  if (sha) body.sha = sha;
+  const resp = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization:  `token ${token}`,
+        Accept:         'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        'User-Agent':   'deploy-tool/1.0',
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(`GitHub file push failed (${path}): ${err.message || resp.status}`);
+  }
+  return true;
+}
+
+// Build the GitHub Actions CI workflow appropriate for the template's framework.
+function buildCiWorkflow(template) {
+  const fw  = template.framework || template.fw || '';
+  const cmd = template.cmd || template.buildCmd || 'npm run build';
+  const out = template.out || template.outputDir || 'dist';
+
+  if (fw === 'Hugo') {
+    return [
+      'name: Build',
+      'on:',
+      '  push:',
+      '    branches: [main]',
+      'jobs:',
+      '  build:',
+      '    runs-on: ubuntu-latest',
+      '    steps:',
+      '      - uses: actions/checkout@v4',
+      '      - name: Setup Hugo',
+      '        uses: peaceiris/actions-hugo@v3',
+      '        with:',
+      "          hugo-version: 'latest'",
+      '          extended: true',
+      `      - run: ${cmd}`,
+      '      - uses: actions/upload-artifact@v4',
+      '        with:',
+      '          name: dist',
+      `          path: ${out}`,
+    ].join('\n');
+  }
+
+  return [
+    'name: Build',
+    'on:',
+    '  push:',
+    '    branches: [main]',
+    'jobs:',
+    '  build:',
+    '    runs-on: ubuntu-latest',
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '      - uses: actions/setup-node@v4',
+    '        with:',
+    '          node-version: 20',
+    '          cache: npm',
+    '      - run: npm ci',
+    `      - run: ${cmd}`,
+    '      - uses: actions/upload-artifact@v4',
+    '        with:',
+    '          name: dist',
+    `          path: ${out}`,
+  ].join('\n');
 }
 
 function detectFramework(repo) {
@@ -876,8 +1043,25 @@ async function handleDeploy(request, env, ctx) {
   const miss = [!cfToken&&'cfToken',!cfAccountId&&'cfAccountId',!ghToken&&'ghToken',!ghUsername&&'ghUsername',!template&&'template'].filter(Boolean);
   if (miss.length) return json({error:`Missing required fields: ${miss.join(', ')}`}, 400);
 
+  // Validate template shape — must be an object with a recognisable build command
+  // and output directory; reject anything that looks injected or malformed.
+  if (typeof template !== 'object' || Array.isArray(template))
+    return json({error:'template must be a plain object.'}, 400);
+
+  const buildCmd = template.cmd || template.buildCmd;
+  const outputDir = template.out || template.outputDir;
+  if (!buildCmd || typeof buildCmd !== 'string' || buildCmd.length > 300)
+    return json({error:'template must include a valid buildCmd (max 300 chars).'}, 400);
+  if (!outputDir || typeof outputDir !== 'string' || outputDir.length > 200)
+    return json({error:'template must include a valid outputDir (max 200 chars).'}, 400);
+
+  // Reject shell-injection characters in the build command and output dir
+  const UNSAFE = /[`$(){}|;&<>]/;
+  if (UNSAFE.test(buildCmd) || UNSAFE.test(outputDir))
+    return json({error:'template buildCmd/outputDir contains disallowed characters.'}, 400);
+
   const deployId  = crypto.randomUUID();
-  const initState = createInitialDeployState(deployId, template.name);
+  const initState = createInitialDeployState(deployId, template.name || template.framework || template.fw || 'unknown');
   await kvPut(env, `deploy:${deployId}`, JSON.stringify(initState), {expirationTtl:7200});
   if (ctx) ctx.waitUntil(runPipeline(deployId, {cfToken,cfAccountId,ghToken,ghUsername,template}, env));
   return json({deployId, message:'Deploy started. Poll /api/deploy/:id for real-time progress.'});
@@ -932,7 +1116,7 @@ function handleHealth() {
   return json({
     status: 'ok',
     service: 'One-Click Deploy Platform API',
-    version: '2.1.0',
+    version: '2.2.0',
     public: true,
     ui: 'Visit the root path / to open the visual control panel.',
     endpoints: {
@@ -996,35 +1180,35 @@ async function runPipeline(deployId, config, env) {
     if (!cr.ok) { const e=await cr.json(); throw new Error(`Repository creation failed: ${e.message}`); }
     await addLog(`[Repo] ✓ Repository created: ${ghUsername}/${repoName} (private)`, 'success');
 
-    // Step 2 — Inject CI build workflow
-    await addLog('[Build] Configuring automated build workflow...', 'info', 2);
-    const wf = [
-      'name: Build',
-      'on:',
-      '  push:',
-      '    branches: [main]',
-      'jobs:',
-      '  build:',
-      '    runs-on: ubuntu-latest',
-      '    steps:',
-      '      - uses: actions/checkout@v4',
-      '      - uses: actions/setup-node@v4',
-      '        with:',
-      '          node-version: 20',
-      '          cache: npm',
-      '      - run: npm ci',
-      `      - run: ${template.cmd||template.buildCmd}`,
-      '      - uses: actions/upload-artifact@v4',
-      '        with:',
-      '          name: dist',
-      `          path: ${template.out||template.outputDir}`,
-    ].join('\n');
-    await fetch(`https://api.github.com/repos/${ghUsername}/${repoName}/contents/.github/workflows/build.yml`, {
-      method:'PUT',
-      headers:{Authorization:`token ${ghToken}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json', 'User-Agent':'deploy-tool/1.0'},
-      body:JSON.stringify({message:'ci: add automated build workflow', content:btoa(wf)}),
-    });
-    await addLog('[Build] ✓ Automated build workflow injected.', 'success');
+    // Step 2 — Push starter source files + CI workflow
+    await addLog('[Files] Pushing framework starter files...', 'info', 2);
+    const starterFiles = getStarterFiles(template);
+    if (starterFiles.length > 0) {
+      for (const file of starterFiles) {
+        await pushFileToRepo(ghUsername, repoName, file.path, file.text, ghToken);
+      }
+      await addLog(`[Files] ✓ Pushed ${starterFiles.length} starter file(s) for ${template.framework||template.fw||'static'}.`, 'success');
+    } else {
+      await addLog('[Files] No built-in starter for this framework — repo initialized with README.', 'warn');
+    }
+
+    // Inject a framework-aware CI workflow so the repo builds correctly on GitHub Actions.
+    await addLog('[Files] Injecting CI build workflow...', 'info');
+    const wf = buildCiWorkflow(template);
+    const wfResp = await fetch(
+      `https://api.github.com/repos/${ghUsername}/${repoName}/contents/.github/workflows/build.yml`,
+      {
+        method:'PUT',
+        headers:{Authorization:`token ${ghToken}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json', 'User-Agent':'deploy-tool/1.0'},
+        body:JSON.stringify({message:'ci: add build workflow', content:b64(wf)}),
+      }
+    );
+    if (!wfResp.ok) {
+      // Non-fatal: the Cloudflare Pages build doesn't depend on this workflow.
+      await addLog('[Files] CI workflow push failed (non-fatal) — Cloudflare Pages will still build.', 'warn');
+    } else {
+      await addLog('[Files] ✓ CI workflow injected.', 'success');
+    }
 
     // Step 3 — Create Cloudflare Pages project
     await addLog('[Deploy] Creating static hosting project...', 'info', 3);

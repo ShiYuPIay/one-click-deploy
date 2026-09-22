@@ -56,3 +56,70 @@ test("POST /api/test-connection rejects incomplete credentials", async () => {
   const body = await response.json();
   assert.equal(body.ok, false);
 });
+
+test("GET /health reports version 2.2.0", async () => {
+  const response = await worker.fetch(request("/health"), {}, {});
+  const body = await response.json();
+  assert.equal(body.version, "2.2.0");
+});
+
+test("POST /api/deploy rejects missing template fields", async () => {
+  const response = await worker.fetch(
+    request("/api/deploy", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        cfToken: "tok", cfAccountId: "id",
+        ghToken: "gh", ghUsername: "user",
+        template: { name: "Test" }, // missing buildCmd and outputDir
+      }),
+    }),
+    {},
+    {},
+  );
+  assert.equal(response.status, 400);
+  const body = await response.json();
+  assert.match(body.error, /buildCmd/);
+});
+
+test("POST /api/deploy rejects shell-injection characters in buildCmd", async () => {
+  const response = await worker.fetch(
+    request("/api/deploy", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        cfToken: "tok", cfAccountId: "id",
+        ghToken: "gh", ghUsername: "user",
+        template: { buildCmd: "npm run build; rm -rf /", outputDir: "dist" },
+      }),
+    }),
+    {},
+    {},
+  );
+  assert.equal(response.status, 400);
+  const body = await response.json();
+  assert.match(body.error, /disallowed/);
+});
+
+test("GET /api/search with no query returns all static templates", async () => {
+  const response = await worker.fetch(request("/api/search"), {}, {});
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.ok(Array.isArray(body.results));
+  assert.ok(body.total > 0);
+});
+
+test("GET /api/search returns 404 for unknown route", async () => {
+  const response = await worker.fetch(request("/api/unknown-route"), {}, {});
+  assert.equal(response.status, 404);
+});
+
+test("OPTIONS preflight returns 204 with CORS headers", async () => {
+  const response = await worker.fetch(
+    request("/api/deploy", { method: "OPTIONS" }),
+    {},
+    {},
+  );
+  assert.equal(response.status, 204);
+  assert.ok(response.headers.get("access-control-allow-origin"));
+});
